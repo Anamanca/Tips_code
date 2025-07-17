@@ -1,0 +1,109 @@
+1. Tai Bitvise tu GG va cai dat, de ssh vao VPS
+
+2. Cai aaPanel - Ubuntu 22.04
+sudo apt update && sudo apt upgrade -y
+
+URL=https://www.aapanel.com/script/install_7.0_en.sh && if [ -f /usr/bin/curl ];then curl -ksSO "$URL" ;else wget --no-check-certificate -O install_7.0_en.sh "$URL";fi;bash install_7.0_en.sh aapanel
+
+3. OpenVPS
+- Cai OpenVPS từ docker trong aaPanel, sau đó stop container and remove
+
+Bước 3: Tạo volume để lưu trữ dữ liệu OpenVPN
+- Để tránh mất file cấu hình như ovpn_env.sh, bạn cần map thư mục /etc/openvpn vào host:
++ Trong aaPanel, vào Files hoặc SSH vào VPS, tạo thư mục để lưu trữ:
+
+mkdir -p /home/openvpn-data
+
++ Đảm bảo thư mục có quyền phù hợp:
+
+chmod -R 755 /home/openvpn-data
+
+Bước 4: Tạo lại container OpenVPN
+- Sử dụng image kylemanna/openvpn (hoặc image bạn đã chọn) và thực hiện các bước khởi tạo đúng cách.
+- Khởi tạo cấu hình OpenVPN:
++ Trong aaPanel, vào Docker > Terminal hoặc dùng SSH.
++ Chạy lệnh để tạo cấu hình server:
+
+docker run -v /home/openvpn-data:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u udp://<IP_của_VPS>
+
++ Thay <IP_của_VPS> bằng địa chỉ IP công cộng của VPS (ví dụ: udp://192.168.1.1).
++ Lệnh này tạo các file cấu hình, bao gồm ovpn_env.sh, trong /home/openvpn-data.
+
+- Khởi tạo PKI (Public Key Infrastructure):
++ Chạy lệnh để tạo chứng chỉ và khóa:
+
+docker run -v /home/openvpn-data:/etc/openvpn --rm -it kylemanna/openvpn ovpn_initpki
+
+- Làm theo hướng dẫn:
++ Nhập passphrase cho CA (lưu lại để sử dụng sau).
++ Xác nhận các thông tin như Common Name (CN).
+
+- Lệnh này tạo các file chứng chỉ và ovpn_env.sh trong /home/openvpn-data.
+
++ Chạy container OpenVPN:
++ Trong aaPanel, vào Docker > Create Container hoặc dùng lệnh:
+
+docker run -d --name openvpn -v /home/openvpn-data:/etc/openvpn --cap-add=NET_ADMIN -p 1194:1194/udp --restart=always kylemanna/openvpn
+
+Giải thích:
+-v /home/openvpn-data:/etc/openvpn: Map thư mục lưu trữ để giữ file cấu hình.
+
+--cap-add=NET_ADMIN: Cấp quyền quản lý mạng.
+
+-p 1194:1194/udp: Mở cổng 1194/UDP cho OpenVPN.
+
+--restart=always: Tự khởi động lại container khi VPS reboot.
+
+- Kiểm tra container:
+
+docker ps
+
+- Đảm bảo container openvpn đang chạy.
+
+- Xem log:
+
+docker logs openvpn
+
+- Nếu không còn lỗi /etc/openvpn/ovpn_env.sh: No such file or directory, bạn đã khắc phục thành công.
+
+Bước 5: Tạo file cấu hình client
+- Tạo client mới:
+- Trong aaPanel > Docker > Terminal của container, chạy:
+
+docker exec -it openvpn easyrsa build-client-full hieunt01 nopass
+
+- Thay client1 bằng tên client bạn muốn.
++ nopass để không yêu cầu mật khẩu cho client (tùy chọn).
++ Xuất file cấu hình client: ( tên client phải giống với cái client khai báo ở trên)
+
+docker exec -it openvpn ovpn_getclient hieunt01 > /home/openvpn-data/hieunt01.ovpn
+
+- Tải file client1.ovpn về máy tính:
++ Trong aaPanel, vào Files, điều hướng đến /home/openvpn-data, tải file client1.ovpn.
++ Hoặc dùng SCP:
+
+scp root@<IP_của_VPS>:/home/openvpn-data/client1.ovpn ~/Downloads/
+
+Bước 6: Kiểm tra firewall
+- Đảm bảo cổng 1194/UDP được mở:
++ Trong aaPanel, vào Security > Firewall.
++ Thêm rule:
+Port: 1194
+Protocol: UDP
+Action: Accept
+
++ Lưu và reload firewall.
+
+Bước 7: Kết nối VPN
+Cài đặt OpenVPN client:
+Windows: https://openvpn.net/client/
+
+macOS: Tunnelblick (https://tunnelblick.net/).
+
+iOS/Android: OpenVPN Connect (App Store/Google Play).
+
+Nhập file client1.ovpn vào ứng dụng client và kết nối.
+
+Kiểm tra IP công cộng tại https://www.whatismyipaddress.com để xác nhận VPN hoạt động.
+
+

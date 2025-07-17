@@ -1,0 +1,14 @@
+# Cai dat Openssh
+
+sudo apt install update
+sudo apt install openssh-server
+sudo systemctl enable ssh
+
+# Kiem tra trang thai
+sudo systemctl status ssh
+
+# Neu chua active thi chay
+sudo systemctl start ssh
+
+# xoa fingerprint cu di, connect lai cai moi
+ssh-keygen -R 192.168.1.22

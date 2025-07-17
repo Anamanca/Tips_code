@@ -1,0 +1,81 @@
+* Cài tmux
+sudo apt update
+sudo apt install tmux
+
+---
+## 🚀 1. Khởi tạo & Quản lý phiên `tmux`
+
+| Lệnh                          | Ý nghĩa                                      |
+|------------------------------|----------------------------------------------|
+| `tmux`                       | Tạo phiên mới                                |
+| `tmux new -s ten_phien`      | Tạo phiên mới với tên cụ thể                 |
+| `tmux list-sessions`         | Liệt kê các phiên đang chạy                  |
+| `tmux attach -t ten_phien`   | Vào lại phiên có tên                         |
+| `tmux kill-session -t ten_phien` | Xoá phiên                                 |
+
+---
+
+## 💡 2. Tổ hợp phím thần thánh
+
+Mặc định, `tmux` dùng `Ctrl + b` làm prefix. Nhấn `Ctrl + b` → rồi:
+
+| Phím tiếp theo | Ý nghĩa                         |
+|----------------|----------------------------------|
+| `c`            | Tạo cửa sổ (window) mới          |
+| `n`/`p`        | Chuyển qua lại giữa các cửa sổ   |
+| `"`            | Chia cửa sổ theo chiều ngang     |
+| `%`            | Chia cửa sổ theo chiều dọc       |
+| `x`            | Đóng pane đang chọn              |
+| `d`            | Tạm rời khỏi phiên (detach)      |
+
+---
+
+## 🔭 3. Chia màn hình như hacker 🎛️
+
+Sau khi chia màn:
+- Dùng `Ctrl + b`, rồi nhấn `arrow` để di chuyển giữa các pane.
+- Dùng `Ctrl + b`, sau đó nhấn `z` để phóng to/thu nhỏ pane đang chọn.
+
+---
+
+## 📂 4. Ghi log hoặc xuất output
+
+Chạy lệnh bên trong `tmux` và redirect output:
+
+```bash
+cardano-node run ... > node.log 2>&1
+```
+
+Hoặc ghi lại toàn bộ phiên:
+
+```bash
+tmux pipe-pane -o 'cat > full-session.log'
+```
+
+---
+
+## ✨ 5. Cài theme & cấu hình đỉnh cao
+
+Tạo file cấu hình:
+```bash
+nano ~/.tmux.conf
+```
+
+Ví dụ: tự động đặt tên cửa sổ theo lệnh đang chạy, hiển thị thời gian...
+
+```tmux
+set -g mouse on
+setw -g automatic-rename on
+set -g status-right "%H:%M %d-%b-%Y"
+```
+
+Sau đó reload:
+```bash
+tmux source-file ~/.tmux.conf
+```
+
+---
+
+🧙 Có thể dùng thêm plugin như [Tmux Plugin Manager (TPM)](https://github.com/tmux-plugins/tpm) để cài theme, lịch, và tự động ghi log.
+
+---

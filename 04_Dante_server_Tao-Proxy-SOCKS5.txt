@@ -1,0 +1,119 @@
+
+Hướng dẫn cài đặt SOCKS5 proxy và cấu hình cho Telegram:
+
+1. Cài đặt SOCKS5 Proxy trên VPS
+
+Bước 2: Cài đặt Dante
+
+sudo apt-get update
+sudo apt-get upgrade
+
+# Cài đặt Dante server:
+sudo apt-get install dante-server
+
+# hoặc thử
+sudo apt-get install danted-server
+
+Bước 3: Cấu hình Dante
+
+# Tạo tệp cấu hình cho Dante:
+sudo nano /etc/danted.conf
+
+# Dán nội dung cấu hình mẫu sau vào tệp
+
+logoutput: /var/log/danted.log
+internal: 0.0.0.0 port = 7857 # doi cong khac 1080
+external: <địa_chỉ_IP_của_VPS>
+method: username none
+user.privileged: root
+user.unprivileged: nobody
+clientmethod: none
+client pass {
+    from: 0.0.0.0/0 to: 0.0.0.0/0
+    log: connect disconnect
+}
+socks pass {
+    from: 0.0.0.0/0 to: 0.0.0.0/0
+    command: bind connect udpassociate
+    log: connect disconnect
+    method: username
+}
+
+- Thay <địa_chỉ_IP_của_VPS> bằng địa chỉ IP công cộng của VPS của bạn.
+- Cổng mặc định là 1080, bạn có thể thay đổi nếu muốn (đảm bảo cổng không bị chặn bởi tường lửa).
+- Lưu tệp (Ctrl+O, Enter, Ctrl+X trong nano).
+
+Bước 4: Tạo tài khoản xác thực cho SOCKS5
+
+# Tạo một người dùng cho proxy:
+sudo useradd -r -s /bin/false hieunt
+sudo passwd hieunt
+
+- Nhập mật khẩu cho sockduser khi được yêu cầu.
+
+Bước 5: Khởi động và kiểm tra Dante
+
+sudo systemctl start danted
+sudo systemctl enable danted
+
+# Kiểm tra trạng thái để đảm bảo Dante đang chạy:
+sudo systemctl status danted
+
+# Kiểm tra log nếu có lỗi:
+cat /var/log/danted.log
+
+Bước 6: Mở cổng trong tường lửa
+
+sudo ufw allow 7857
+
+Hoặc, trong aaPanel, bạn có thể vào Security > Firewall và thêm quy tắc để mở cổng 1080.
+
+2. Cấu hình SOCKS5 Proxy trên Telegram
+
+Sau khi thiết lập SOCKS5 proxy trên VPS, bạn có thể cấu hình Telegram để sử dụng nó:
+
+* Trên Android:
+Mở ứng dụng Telegram.
+- Nhấn vào biểu tượng ba gạch (☰) > Settings > Data and Storage > Proxy.
+- Nhấn Add Proxy > chọn SOCKS5.
+- Điền thông tin:
+    + Server: Địa chỉ IP công cộng của VPS.
+    + Port: 1080 (hoặc cổng bạn đã thiết lập trong Dante).
+    + Username: sockduser (hoặc tên người dùng bạn đã tạo).
+    + Password: Mật khẩu bạn đã đặt cho sockduser.
+- Nhấn Save hoặc Connect để kết nối.
+
+* Trên iOS:
+- Mở Telegram > Settings > Data and Storage > Use Proxy.
+- Nhấn Add Proxy > chọn SOCKS5.
+- Nhập thông tin như trên (Server, Port, Username, Password).
+- Nhấn Save để lưu.
+
+* Trên máy tính (Desktop):
+- Mở Telegram > Settings > Advanced > Connection Type > Use custom proxy.
+- Chọn SOCKS5 và nhập thông tin như trên.
+- Nhấn Save hoặc Connect.
+
+3. Lưu ý quan trọng
+- Bảo mật: Đảm bảo bạn thay đổi cổng mặc định của aaPanel (8888) và đặt mật khẩu mạnh để tăng cường bảo mật. Điều này có thể thực hiện trong Settings > Security của aaPanel.
+- Tường lửa: Nếu bạn sử dụng Fail2ban hoặc SYS Firewall (có sẵn trong aaPanel App Store), hãy kiểm tra để đảm bảo cổng SOCKS5 (1080) không bị chặn.
+- Hiệu suất VPS: SOCKS5 proxy có thể tiêu tốn tài nguyên nếu nhiều người dùng kết nối cùng lúc. Đảm bảo VPS của bạn có đủ RAM và CPU (tối thiểu 512MB RAM, nhưng 1GB trở lên được khuyến nghị).
+- Telegram Bot Notifications: Nếu bạn muốn nhận thông báo từ aaPanel qua Telegram, bạn có thể thiết lập thông qua Settings > Notification > Telegram trong aaPanel. Điều này yêu cầu tạo một bot qua 
+@BotFather và lấy API token, nhưng không liên quan trực tiếp đến SOCKS5.
+
+4. Giải pháp thay thế
+- Nếu bạn gặp khó khăn khi cài đặt Dante, bạn có thể thử Shadowsocks, một proxy nhẹ và dễ cấu hình:
+
+# Cài đặt Shadowsocks:
+sudo apt-get install shadowsocks-libev
+
+- Cấu hình Shadowsocks với tệp JSON và khởi động dịch vụ (tham khảo hướng dẫn chi tiết từ Shadowsocks.org).
+- Shadowsocks cũng hỗ trợ SOCKS5 và tương thích tốt với Telegram.
+
+5. Kiểm tra và xử lý sự cố
+- Nếu Telegram không kết nối qua proxy, kiểm tra:
+- Cổng 1080 có mở trên VPS không (sudo netstat -tuln | grep 1080).
+- Địa chỉ IP và thông tin xác thực có đúng không.
+- Dịch vụ Dante có đang chạy không (sudo systemctl status danted).
+- Nếu bạn gặp lỗi khi cài đặt Dante, hãy kiểm tra log (/var/log/danted.log) hoặc cài lại gói:
+sudo apt-get install --reinstall dante-server

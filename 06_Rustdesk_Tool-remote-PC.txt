@@ -1,0 +1,12 @@
+* cài trong docker 1 click aapanel
+
+- Mở cổng cần thiết trên aaPanel:
+Vào Security > Firewall trong aaPanel, mở các cổng:
+
+TCP: 21115, 21116, 21117, 21118, 21119
+
+UDP: 21116
+
+- Nếu dùng giao diện web (RustDesk Pro), mở thêm TCP 21114 hoặc 443 (HTTPS)
+
+- vào file cài đặt rustdesk/rustdesk_siSJ/data , kiếm Id_...pub , để copy key
