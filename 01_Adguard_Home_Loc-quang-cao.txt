@@ -1,0 +1,49 @@
+# Cài đặt Adguard Home bằng docker, sử dụng  các port mặc định
+# Link hướng dẫn : https://thuanbui.me/adguard-home/
+
+cd ~
+mkdir adguardhome
+cd adguardhome
+nano docker-compose.yml
+
+# Nhập nội dung file
+
+version: "2"
+services:
+  adguardhome:
+    image: adguard/adguardhome
+    container_name: adguardhome
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 784:784/udp
+      - 853:853/tcp
+      - 3000:3000/tcp
+      - 8080:80/tcp
+    volumes:
+      - ./workdir:/opt/adguardhome/work
+      - ./confdir:/opt/adguardhome/conf
+    restart: unless-stopped
+
+# kích hoạt 
+sudo docker-compose up -d
+
+# Sửa lỗi fail to bind on port 53
+# Kiểm tra có phải bị resolved chiếm dụng ko
+sudo lsof -i :53
+
+sudo mkdir -p /etc/systemd/resolved.conf.d/
+sudo nano /etc/systemd/resolved.conf.d/adguardhome.conf
+
+# Điền nội dung sau:
+[Resolve]
+DNS=127.0.0.1
+DNSStubListener=no
+
+# cập nhật thông số và khởi động lại
+sudo mv /etc/resolv.conf /etc/resolv.conf.backup
+sudo ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
+sudo systemctl restart systemd-resolved
+
+# Port đã được tự do, kiểm tra lại
+sudo lsof -i :53
