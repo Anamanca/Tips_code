@@ -1,0 +1,83 @@
+1. tạo file
+
+nano /etc/systemd/system/cardano-node.service
+
+2. Lấy đường dẫn là truyền vào đây
++ lấy đường dẫn workingDir : vào thư mục chứa configure gõ pwd
++ Lấy đường dẫn cardanoNodeDir: which cardano-node
+
+[Unit]
+Description=Cardano Node Service
+After=network.target
+
+[Service]
+User=root
+
+Environment=workingDir=/home/hieunt/cardano-my-node
+
+WorkingDirectory=/home/hieunt/cardano-my-node
+
+ExecStart=/usr/local/bin/cardano-node run \
+  --topology ${workingDir}/topology.json \
+  --database-path ${workingDir}/db \
+  --socket-path ${workingDir}/db/node.socket \
+  --host-addr 0.0.0.0 \
+  --port 3001 \
+  --config ${workingDir}/config.json +RTS -N4 -I0 -A64m -qg -qb --disable-delayed-os-memory-return -RTS
+
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+
+
+# Tùy chọn chỉnh sửa run
++RTS -N4 -I0 -A32m -qg -qb --disable-delayed-os-memory-return -RTS
+
+# cap quyen truy cap
+sudo chmod 644 /etc/systemd/system/cardano-node.service
+
+3. Lưu file trên sau đó chạy
+
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable cardano-node.service
+sudo systemctl restart cardano-node
+sudo systemctl status cardano-node
+
+sudo systemctl stop cardano-node
+sudo systemctl disable cardano-node.service
+
+# kích hoạt tự chạy khi khởi động
+sudo systemctl enable cardano-node.service
+
+4. kiểm tra log 
+journalctl -u cardano-node -f
+
+5. Kiểm tra đồng bộ được bao nhiêu
+
+nano ~/.bashrc
+export CARDANO_NODE_SOCKET_PATH="$HOME/git/main_cardano/node.socket"
+source ~/.bashrc
+
+# 2 preview , 1 prepro , --mainnet
+cardano-cli query tip --testnet-magic 1
+
+* Cấp full quyền truy cập cho user
+sudo usermod -aG sudo hieunt
+
+# Nếu vẫn ko được , xài lệnh để caaos quyền truy cập vào node.socket
+# sudo chown hieunt:hieunt /home/hieunt/git/main_cardano/node.socket
+sudo chown hieunt:hieunt ${CARDANO_NODE_SOCKET_PATH}
+
+- sau đó thoát ra và đăng nhập lại bằng lệnh : exit , và ssh vào lại
+
+- kiểm tra quyền bằng lệnh : whoami
+
+6. cai man hinh theo doi status
+
+sed -i env \
+    -e "s/\#CONFIG=\"\${CNODE_HOME}\/files\/config.json\"/CONFIG=\"\${NODE_HOME}\/config.json\"/g" \
+    -e "s/\#SOCKET=\"\${CNODE_HOME}\/sockets\/node.socket\"/SOCKET=\"\${NODE_HOME}\/db\/node.socket\"/g"

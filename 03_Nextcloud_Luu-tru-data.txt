@@ -1,0 +1,60 @@
+# Do trước đó cổng 8080 bị sử dụng bởi AdGuard home nên ta cần đổi lại port khác
+
+sudo apt update
+mkdir /opt/nextcloud
+cd /opt/nextcloud
+
+# Mở port 9090
+sudo ufw allow 9090/tcp
+
+
+# tao file cai
+nano docker-compose.yaml
+
+version: '3'
+
+services:
+  db:
+    image: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_PASSWORD: nextcloudpassword
+    volumes:
+      - db:/var/lib/mysql
+
+  app:
+    image: nextcloud
+    restart: always
+    ports:
+      - "9090:80"
+    links:
+      - db
+    volumes:
+      - nextcloud:/var/www/html
+    environment:
+      MYSQL_PASSWORD: nextcloudpassword
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_HOST: db
+
+volumes:
+  nextcloud:
+  db:
+
+docker-compose up -d
+
+
+* lỗi máy local ko truy cập được data của nextcloud, do chưa khai báo domain security
+
+/www/dk_project/dk_app/nextcloud/nextcloud_home/html/config/config.php
+
+example:
+
+'trusted_domains' =>
+  array (
+    0 => 'localhost',
+    1 => '192.168.1.100:15381',
+  ),

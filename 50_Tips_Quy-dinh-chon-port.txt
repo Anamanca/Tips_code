@@ -1,0 +1,8 @@
+* Các cổng nhạy cảm
+- Tránh cổng phổ biến: Một số cổng thường được sử dụng bởi các dịch vụ khác, ví dụ:
+22 (SSH), 25 (SMTP), 3306 (MySQL), 5432 (PostgreSQL), 8080 (thường dùng bởi web server), 8443 (HTTPS thay thế).
+
+- Cổng không chuẩn: Các cổng như 10000–65535 thường ít được sử dụng, nên chọn trong khoảng này để giảm nguy cơ xung đột.
+
+- Nên chọn cổng từ 1024 trở nên, để khỏi vướng quyền root
+- Port từ 10,000 -> 65536 thường free

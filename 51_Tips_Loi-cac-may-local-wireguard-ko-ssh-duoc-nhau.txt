@@ -1,0 +1,30 @@
+Là do chưa thiết lập quy tắc trên VPS
+
+# Cài iptables-persistent
+sudo apt update
+sudo apt install iptables-persistent
+
+- Trong quá trình cài sẽ bị hỏi có muốn lưu quy tắc ko, chọn có
+
+# Kiểm tra xem có file chưa : rules.v4 và rules.v6
+ls -l /etc/iptables/
+
+# nếu chưa thì làm tiếp
+sudo mkdir -p /etc/iptables
+sudo touch /etc/iptables/rules.v4
+
+# Lưu quy tắc
+sudo iptables-save > /etc/iptables/rules.v4
+
+# kiểm tra trạng thái , nếu chưa bật thì bật lên
+sudo systemctl status netfilter-persistent
+sudo systemctl enable netfilter-persistent
+
+# Thêm lại quy tắc nếu cần
+sudo iptables -A FORWARD -i wg0 -o wg0 -j ACCEPT
+sudo iptables-save > /etc/iptables/rules.v4
+
+# kiểm tra
+sudo wg show
+
+-> Đảm bảo thấy latest handshake cho các client
