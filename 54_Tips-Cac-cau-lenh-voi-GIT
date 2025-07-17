@@ -73,10 +73,10 @@ git cherry-pick --abort
 # Nên ghi rõ tên nhánh khi push để chắc chắn rằng minhd đang muốn đẩy code nhánh nào
 
 git push origin ten_nhanh
-git push
 # nếu ghi mỗi git push nó sẽ mặc định push nhánh đã được setup trong upstream,
-# hoặc khi tạo nhánh mới , nếu ko git sẽ báo lỗi
-git push --set-upstream origin <branch>
-
+# hoặc khi tạo nhánh mới, nếu ko git sẽ báo lỗi.
+git push --set-upstream origin ten_nhanh
+# Nếu bạn đã set-upstream , thì có thể sử dụng git push cho lẹ
+git push
 
 
