@@ -1,0 +1,61 @@
+git config --global user.name "Tên của bạn"
+git config --global user.email "email@domain.com"
+
+# Khởi tạo repository
+git init
+
+# Kiểm tra trạng thái
+git status
+
+# Thêm file vào staging
+git add <file>
+git add .  # Thêm tất cả
+
+# Commit thay đổi
+git commit -m "Thông điệp commit"
+
+# Xem lịch sử commit
+git log
+
+# Tạo branch mới
+git branch <tên-branch>
+
+# Chuyển sang branch
+git checkout <tên-branch>
+
+# Tạo và chuyển sang branch mới
+git checkout -b <tên-branch>
+
+# Gộp branch
+git merge <tên-branch>
+
+# Thêm remote repository
+git remote add origin <URL>
+
+# Push lên remote
+git push origin <tên-branch>
+
+# Pull từ remote
+git pull origin <tên-branch>
+
+# Clone repository
+git clone <URL>
+
+# Xem các branch
+git branch
+
+# Xóa branch
+git branch -d <tên-branch>
+
+--------------- Quy trình Cherry pick 1 commit----
+
+# Tạo 1 nhánh mới tên A để làm việc
+git checkout -b A 
+git cherry-pick def5678 # Mã số commit
+git log --oneline # kiểm tra kết quả
+# Nếu có conflict , giải quyết
+git cherry-pick --continue
+# Đẩy code lên remote
+git push origin A
+# Hủy cherry-pick
+git cherry-pick --abort
